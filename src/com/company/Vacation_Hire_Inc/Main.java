@@ -15,7 +15,67 @@ public class Main {
     public static List<Customer> customers_list = new ArrayList<>();
     public static List<Order> orders_list = new ArrayList<>();
 
+    // Case 1 - New Customer
+    public static void newCustomer()
+    {
+        Scanner scanner = new Scanner(System.in);  // initializing a scanner in order to be able to take input.
+        String name = null;
+        String number = null;
+        // making sure the input name is in the right format and then adding it customer.
+        name = readNameFromInput(name);
 
+        // making sure the input phone number is in the right format and then adding it customer.
+        number=readPhoneNumberFromInput(number);
+        Customer customer = new Customer(number,name);        // creating a new instance of a customer.
+
+        //adding the newly made customer to out customer_list.
+        customers_list.add(customer);
+
+        System.out.println("\n --- Added a new customer to our database! ---\n");
+        System.out.println("{ \n Customer's Name: " + customer.getName() + ";" + "\n Customer's Phone Number: " + customer.getPhone() +" \n}");
+
+        menuSelection();
+    }
+    // Case 2 - Check for existing Customer
+    public static String existingCustomer()
+    {
+        // if we can't find the phone number, we will be asked to write a new one.
+        // each customer has a phone number that is directly linked to their Order.
+
+        System.out.println("Searching the database for a customer with the specified phone number");
+        System.out.println( "...");
+
+        Scanner scanner = new Scanner(System.in);
+        String number;
+        while (true) {
+            System.out.println("Please enter a Phone Number: ");
+            number = scanner.nextLine();
+            boolean allLetters = number.replaceAll("\\s", "").chars().allMatch(Character::isDigit);
+            if (!allLetters)
+            {System.out.println("Typo: Please make sure your phone number does not contain any Letters!");
+                return "";
+            }
+            else {
+                System.out.println("Phone Number: " + number);
+                break;
+            }
+        }
+        boolean found = false;
+        for (Customer customer : customers_list)
+        {
+            if (customer.getPhone().equals(number)) {
+                found = true;
+                System.out.println("Customer " + customer.getName() + " with the following phone number: " + number + " has been found");
+            }
+        }
+
+        if (!found)
+        {//existingCustomer();
+            System.out.println("No costumer found with that phone number! No order was made on that phone number");
+            return "";}
+        else return number;
+    }
+    // Case 3 - Create an Order for a Customer
     public static void addOrder()
     {
         System.out.println("Let's create a new Order\n..");
@@ -80,7 +140,7 @@ public class Main {
             System.out.println("Enter when END date of the rental - MUST BE OF FORM: day-month-year. EX: 08-05-2020 ");
             String end_date = input.nextLine();
 
-            customer = getCustomerByPhoneNumber(number,customers_list);
+            customer = getCustomerByPhoneNumber(number);
             order = new Order(rental, customer, start_date, end_date);
             orders_list.add(order);
 
@@ -93,7 +153,7 @@ public class Main {
             System.out.println("Added the order to our database");
         }
     }
-
+    // Case 4 - List Orders
     public static void listOrders(List<Order> myList)
     {
         System.out.println("List of all the orders: ");
@@ -101,29 +161,19 @@ public class Main {
             System.out.println(order.toString());
 
     }
+    // Case 5 - Update list Orders
     public static void updateOrders()
     {
         Scanner scanner = new Scanner(System.in);
         Customer customer = null;
         Rental rental;
         Order order;
-        String number;
+        String number = null;
         System.out.println("Customer comes in after the rental period is over");
         System.out.println("We need to make sure we make the correct bill");
-        while (true)
-        {
-            System.out.print("Enter the phone Number: ");
-            number = scanner.nextLine();
-            boolean alldigits = number.replaceAll("\\s", "").chars().allMatch(Character::isDigit);
-            if (!alldigits)
-                System.out.println("Typo: Please make sure your phone number is a valid one");
-            else {
-                System.out.println("Phone Number: " + number);
-                break;
-            }
-        }
-        if (getCustomerByPhoneNumber(number,customers_list) != null) {
-            customer = getCustomerByPhoneNumber(number,customers_list);
+        number = readPhoneNumberFromInput(number);
+        if (getCustomerByPhoneNumber(number) != null) {
+            customer = getCustomerByPhoneNumber(number);
             System.out.println("Customer with the number found");
         }
         else
@@ -187,7 +237,17 @@ public class Main {
 
 
     }
-
+    // Case 6 - List all rented vehicles
+    public static void showAllRentedVehicles()
+    {
+        System.out.println("All the vehicles that are being rented now: ");
+        for (Order order : orders_list)
+        {
+            if (order.getRental() instanceof Car)
+                System.out.println(((Car) order.getRental()).getType());
+        }
+    }
+    // Returns the order from the orders_list that has a specified customer *used in updateOrders - Case 5
     public static Order getOrderByCustomer(Customer customer)
     {
         for (Order order : orders_list)
@@ -195,103 +255,16 @@ public class Main {
                     return order;
         return null;
     }
-
-    public static void showAllRentedVehicles()
+    // Returns a customer from the customers_list that has a specified phone number *used in addOrder - Case 3
+    public static Customer getCustomerByPhoneNumber(String phone)
     {
-
-    }
-
-
-    public static void newCustomer()
-    {
-        Scanner scanner = new Scanner(System.in);  // initializing a scanner in order to be able to take input.
-        String name;
-        String number;
-        // making sure the input name is in the right format and then adding it customer.
-        while (true)
-        {
-            System.out.print("Enter the name: ");
-            name = scanner.nextLine();
-            boolean allLetters = name.replaceAll("\\s", "").chars().allMatch(Character::isLetter);
-            if (!allLetters)
-                System.out.println("Typo: Please make sure your name does not contain any Digits!");
-            else {
-                System.out.println("Name: " + name);
-                break;
-            }
-        }
-
-        // making sure the input phone number is in the right format and then adding it customer.
-        while (true)
-        {
-            System.out.print("Enter the phone Number: ");
-            number = scanner.nextLine();
-            boolean alldigits = number.replaceAll("\\s", "").chars().allMatch(Character::isDigit);
-            if (!alldigits)
-                System.out.println("Typo: Please make sure your phone number does not contain any Letters!");
-            else {
-                System.out.println("Phone Number: " + number);
-                break;
-            }
-        }
-        Customer customer = new Customer(number,name);        // creating a new instance of a customer.
-
-        //adding the newly made customer to out customer_list.
-        customers_list.add(customer);
-
-        System.out.println("\n --- Added a new customer to our database! ---\n");
-        System.out.println("{ \n Customer's Name: " + customer.getName() + ";" + "\n Customer's Phone Number: " + customer.getPhone() +" \n}");
-
-        menuSelection();
-    }
-
-    public static String existingCustomer()
-    {
-        // if we can't find the phone number, we will be asked to write a new one.
-        // each customer has a phone number that is directly linked to their Order.
-
-        System.out.println("Searching the database for a customer with the specified phone number");
-        System.out.println( "...");
-
-        Scanner scanner = new Scanner(System.in);
-        String number;
-        while (true) {
-            System.out.println("Please enter a Phone Number: ");
-            number = scanner.nextLine();
-            boolean allLetters = number.replaceAll("\\s", "").chars().allMatch(Character::isDigit);
-            if (!allLetters)
-            {System.out.println("Typo: Please make sure your phone number does not contain any Letters!");
-                return "";
-            }
-            else {
-                System.out.println("Phone Number: " + number);
-                break;
-            }
-        }
-            boolean found = false;
-            for (Customer customer : customers_list)
-            {
-                if (customer.getPhone().equals(number)) {
-                    found = true;
-                    System.out.println("Customer " + customer.getName() + " with the following phone number: " + number + " has been found");
-                }
-            }
-
-                if (!found)
-                {//existingCustomer();
-                    System.out.println("No costumer found with that phone number! No order was made on that phone number");
-                     return "";}
-                else return number;
-    }
-
-    public static Customer getCustomerByPhoneNumber(String phone, List<Customer> my_list)
-    {
-        for (Customer customer : my_list)
+        for (Customer customer : customers_list)
             if (customer.getPhone().equals(phone))
                 return customer;
         return null;
     }
-    public static void readPhoneNumberFromInput(String number)
+    // Makes sure the user puts in a valid phone number as an input *used in newCustomer() - Case 1, addOrder - Case 3, updateOrders - Case 5
+    public static String readPhoneNumberFromInput(String number)
     {
         Scanner scanner = new Scanner(System.in);
         while (true) {
@@ -306,8 +279,10 @@ public class Main {
                 break;
             }
         }
+        return number;
     }
-    public static void readNameFromInput(String name)
+    // Makes sure the user puts in a valid name as an input *used in newCustomer() - Case 1
+    public static String readNameFromInput(String name)
     {
         Scanner scanner = new Scanner(System.in);
         while (true)
@@ -322,16 +297,9 @@ public class Main {
                 break;
             }
         }
+        return name;
     }
 
-    public static Order getOrderByCustomer(List<Order> my_list, String phone, List<Customer> customers)
-    {
-        for (Order order : my_list)
-            if (order.getCustomer().equals(getCustomerByPhoneNumber(phone,customers)))
-                return order;
-        return null;
-
-    }
 
     public static void menuSelection() {
         Scanner input = new Scanner(System.in);
@@ -342,8 +310,8 @@ public class Main {
         do {
             System.out.println("\nChoose an option from the following: ");
             System.out.println("-----------------------------------");
-            System.out.println("1 - New Client");
-            System.out.println("2 - Check for existing Client");
+            System.out.println("1 - New Customer");
+            System.out.println("2 - Check for existing Customer");
             System.out.println("3 - Create an Order for a Customer");
             System.out.println("4 - List Orders");
             System.out.println("5 - Update list Orders");
